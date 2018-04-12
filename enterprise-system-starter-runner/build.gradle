@@ -1,0 +1,47 @@
+dependencies {
+    compile 'com.system:core-ui:1.0'
+
+    compile 'org.springframework.boot:spring-boot-starter-freemarker'
+    compile group: 'org.flywaydb', name: 'flyway-core', version: '4.2.0'
+    compile group: 'com.zaxxer', name: 'HikariCP', version: '2.7.4'
+
+    compile group: 'net.bytebuddy', name: 'byte-buddy-dep', version: '1.8.0'
+    compile group: 'net.bytebuddy', name: 'byte-buddy-agent', version: '1.8.0'
+    compile group: 'net.bytebuddy', name: 'byte-buddy', version: '1.8.0'
+
+    compile group: 'org.projectlombok', name: 'lombok', version: '1.16.20'
+}
+
+ext {
+    mainClassName = 'com.starter.runner.StarterRunner'
+    if (project.hasProperty('jvmArgs')) {
+        applicationDefaultJvmArgs = (project.jvmArgs.split("\\s+") as List)
+    }
+}
+springBoot {
+    mainClassName = 'com.starter.runner.StarterRunner'
+}
+
+task concatenateCss() {
+    doLast {
+        def systemAllOne = new File(uiResourcesPath + '' + systemAllOneCssPath)
+        def systemAllTwo = new File(uiResourcesPath + '' + systemAllTwoCssPath)
+
+        def systemAllOneOverride = new File(uiResourcesPath + '' + systemAllOneOverrideCssPath)
+        def systemAllTwoOverride = new File(uiResourcesPath + '' + systemAllTwoOverrideCssPath)
+
+        systemAllOne << systemAllOneOverride.text
+        systemAllTwo << systemAllTwoOverride.text
+    }
+}
+
+task buildExtJs(type: Exec) {
+    workingDir uiWorkingDir
+    commandLine buildExtJsCommand.tokenize()
+}
+
+task fullDeployableBuild(dependsOn: buildExtJs) {
+    group 'application'
+}
+
+buildExtJs.finalizedBy concatenateCss
